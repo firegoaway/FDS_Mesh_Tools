@@ -22,12 +22,12 @@ def open_file():
             parse_file(file_path)
         except Exception as e:
             messagebox.showerror("Ошибка", f"Не удалось прочесть {ini_path}: {e}")
-            file_path = filedialog.askopenfilename(filetypes=[("FDS files", "*.fds"), ("All files", "*.*")])
+            file_path = filedialog.askopenfilename(filetypes=[("Файлы формата FDS", "*.fds"), ("Все файлы", "*.*")])
             if not file_path:
                 return
             parse_file(file_path)
     else:
-        file_path = filedialog.askopenfilename(filetypes=[("FDS files", "*.fds"), ("All files", "*.*")])
+        file_path = filedialog.askopenfilename(filetypes=[("Файлы формата FDS", "*.fds"), ("Все файлы", "*.*")])
         if not file_path:
             return
         parse_file(file_path)
@@ -72,7 +72,9 @@ def refine_mesh():
             messagebox.showerror("Ошибка выбора", "Выберите хотя бы одну расчётную область из списка.")
             return
 
-        file_path = filedialog.askopenfilename(filetypes=[("FDS files", "*.fds"), ("All files", "*.*")])
+        # file_path = filedialog.askopenfilename(filetypes=[("Файлы формата FDS", "*.fds"), ("Все файлы", "*.*")])
+        ini_path = 'filePath.ini'
+        file_path = read_ini_file(ini_path)
         if not file_path:
             return
 
@@ -92,8 +94,9 @@ def refine_mesh():
 
         with open(file_path, "w") as file:
             file.writelines(contents)
+            
         messagebox.showinfo("Успех!", "Расчётные области преобразованы и сохранены.")
-        root.quit() # Закрыть окно утилиты после сообщения об успешном преобразовании
+        app.quit() # Закрыть окно утилиты после сообщения об успешном преобразовании
     except ValueError:
         messagebox.showerror("Ошибка ввода", "Значение Csw должно быть рациональным положительным.")
 
@@ -104,7 +107,9 @@ def unselect_all():
     lb.select_clear(0, tk.END)
 
 app = tk.Tk()
-app.title("FDS Mesh Refiner-Coarser")
+app.title("FDS Mesh Refiner-Coarsener v0.1.1")
+app.iconbitmap('.gitpics\\Refiner-Coarsener.ico')
+app.wm_iconbitmap('.gitpics\\Refiner-Coarsener.ico')
 
 frame = ttk.Frame(app, padding="10")
 frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))

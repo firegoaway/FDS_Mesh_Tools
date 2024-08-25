@@ -96,7 +96,9 @@ def open_file():
         fds_file_path = file_path
         fds_lines = lines
         if any(line.startswith('&MESH') for line in fds_lines):
-            open_partition_window()
+            partition_label.config(state=tk.NORMAL)
+            partition_entry.config(state=tk.NORMAL)
+            partition_button.config(state=tk.NORMAL)
         else:
             messagebox.showerror("Ошибка", "Расчетная область не найдена.")
 
@@ -109,22 +111,30 @@ def on_partition_button():
         if modified_lines:
             write_fds_file(fds_file_path, modified_lines)
             messagebox.showinfo("Успех!", f"Расчетная область поделена на {partition_value}")
-            root.quit()  # Убить окно скрипта после сообщения об успешном разбиении
+            root.quit()  # Завершить выполнение программы после сообщения об успешном разбиении
     except ValueError as ve:
         messagebox.showerror("Ошибка", str(ve))
 
-def open_partition_window():
-    partition_window = tk.Toplevel(root)
-    partition_window.title("Mesh Partition Tool")
-    tk.Label(partition_window, text="Число разбиений:").grid(row=0, column=0)
-    global partition_entry
-    partition_entry = tk.Entry(partition_window)
-    partition_entry.grid(row=0, column=1)
-    partition_button = tk.Button(partition_window, text="Разбить", command=on_partition_button)
-    partition_button.grid(row=1, columnspan=2)
-
+# Основное окно GUI
 root = tk.Tk()
-root.withdraw()  # Скрываем корень
-root.after(0, open_file)  # Автоматически считываем путь к файлу сценария
+root.iconbitmap('.gitpics\\Partition.ico')
+root.wm_iconbitmap('.gitpics\\Partition.ico')
 
+# Создаём надписи, элементы ввода и кнопки непосредственно в корневом окне
+partition_label = tk.Label(root, text="Число разбиений:")
+partition_label.pack(pady=5)
+
+global partition_entry
+partition_entry = tk.Entry(root)
+partition_entry.pack(padx=25, pady=5)
+partition_entry.config(state=tk.DISABLED)  # Изначально отключен
+
+partition_button = tk.Button(root, text="Разбить", command=on_partition_button)
+partition_button.pack(pady=5)
+partition_button.config(state=tk.DISABLED)  # Изначально отключен
+
+# Сразу читаем файл
+root.after(0, open_file)
+
+# Открываем окно GUI
 root.mainloop()

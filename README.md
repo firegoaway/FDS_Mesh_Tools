@@ -37,6 +37,6 @@
 - Хэш-сумма обновляется только при обновлении версии утилиты и всегда доступна в конце файла **README.md**.
 
 ### Актуальные Хэш-суммы
-> FMT Partitioner.exe - **70169f86c5b9dac5a29a431d41882242**
+> FMT Partitioner.exe - **8cb4b1012898f27ae7629c5a325cd804**
 
-> FMT Refiner-Coarsener.exe - **40c7f61a46c483965361443f8a434735**
+> FMT Refiner-Coarsener.exe - **900b4a30901f923208200fe9e9406f17**
