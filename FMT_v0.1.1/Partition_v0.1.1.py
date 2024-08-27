@@ -117,6 +117,7 @@ def on_partition_button():
 
 # Основное окно GUI
 root = tk.Tk()
+root.title("FMT Mesh Partition Tool v0.1.1")
 root.iconbitmap('.gitpics\\Partition.ico')
 root.wm_iconbitmap('.gitpics\\Partition.ico')
 
