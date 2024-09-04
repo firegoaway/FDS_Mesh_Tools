@@ -4,6 +4,7 @@ import numpy as np
 import re
 import math
 import configparser
+import os
 
 def split_mesh(original_mesh, num_splits):
     ijk = original_mesh['IJK']
@@ -88,8 +89,14 @@ def read_ini_file(ini_file):
     return config['filePath']['filePath']
 
 def open_file():
-    ini_path = 'filePath.ini'
+    current_directory = os.path.dirname(__file__)
+    parent_directory = os.path.abspath(os.path.join(current_directory, os.pardir))
+    inis_path = os.path.join(parent_directory, 'inis')
+        
+    ini_path = os.path.join(inis_path, 'filePath.ini')
+        
     file_path = read_ini_file(ini_path)
+    
     if file_path:
         lines = read_fds_file(file_path)
         global fds_file_path, fds_lines
@@ -117,9 +124,14 @@ def on_partition_button():
 
 # Основное окно GUI
 root = tk.Tk()
+
+current_directory = os.path.dirname(__file__)
+parent_directory = os.path.abspath(os.path.join(current_directory, os.pardir))
+icon_path = os.path.join(parent_directory, '.gitpics', 'Partition.ico')
+
 root.title("FMT Mesh Partition Tool v0.1.1")
-root.iconbitmap('.gitpics\\Partition.ico')
-root.wm_iconbitmap('.gitpics\\Partition.ico')
+root.iconbitmap(icon_path)
+root.wm_iconbitmap(icon_path)
 
 # Создаём надписи, элементы ввода и кнопки непосредственно в корневом окне
 partition_label = tk.Label(root, text="Число разбиений:")

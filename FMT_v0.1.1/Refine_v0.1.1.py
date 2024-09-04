@@ -14,8 +14,14 @@ def read_ini_file(ini_file):
     return config['filePath']['filePath']
 
 def open_file():
-    ini_path = 'filePath.ini'
+    current_directory = os.path.dirname(__file__)
+    parent_directory = os.path.abspath(os.path.join(current_directory, os.pardir))
+    inis_path = os.path.join(parent_directory, 'inis')
+        
+    ini_path = os.path.join(inis_path, 'filePath.ini')
+    
     file_path = None
+    
     if os.path.exists(ini_path):
         try:
             file_path = read_ini_file(ini_path)
@@ -73,7 +79,13 @@ def refine_mesh():
             return
 
         # file_path = filedialog.askopenfilename(filetypes=[("Файлы формата FDS", "*.fds"), ("Все файлы", "*.*")])
-        ini_path = 'filePath.ini'
+        
+        current_directory = os.path.dirname(__file__)
+        parent_directory = os.path.abspath(os.path.join(current_directory, os.pardir))
+        inis_path = os.path.join(parent_directory, 'inis')
+        
+        ini_path = os.path.join(inis_path, 'filePath.ini')
+        
         file_path = read_ini_file(ini_path)
         if not file_path:
             return
@@ -107,9 +119,14 @@ def unselect_all():
     lb.select_clear(0, tk.END)
 
 app = tk.Tk()
+
+current_directory = os.path.dirname(__file__)
+parent_directory = os.path.abspath(os.path.join(current_directory, os.pardir))
+icon_path = os.path.join(parent_directory, '.gitpics', 'Refiner-Coarsener.ico')
+
 app.title("FDS Mesh Refiner-Coarsener v0.1.1")
-app.iconbitmap('.gitpics\\Refiner-Coarsener.ico')
-app.wm_iconbitmap('.gitpics\\Refiner-Coarsener.ico')
+app.iconbitmap(icon_path)
+app.wm_iconbitmap(icon_path)
 
 frame = ttk.Frame(app, padding="10")
 frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
