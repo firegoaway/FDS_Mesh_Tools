@@ -96,9 +96,9 @@ def refine_mesh():
         for index in selected_indices:
             I, J, K, Xmin, Xmax, Ymin, Ymax, Zmin, Zmax, line_index = meshes[index]
             Cs = min(calculate_cs(Xmin, Xmax, I), calculate_cs(Ymin, Ymax, J), calculate_cs(Zmin, Zmax, K))
-            new_I = round(I * (Cs / Csw))
-            new_J = round(J * (Cs / Csw))
-            new_K = round(K * (Cs / Csw))
+            new_I = int(I * (Cs / Csw))
+            new_J = int(J * (Cs / Csw))
+            new_K = int(K * (Cs / Csw))
 
             original_line = lb.get(index).split('    ')[0]
             new_line = re.sub(r'IJK=\d+,\d+,\d+', f'IJK={new_I},{new_J},{new_K}', original_line)
@@ -109,6 +109,7 @@ def refine_mesh():
             
         messagebox.showinfo("Успех!", "Расчётные области преобразованы и сохранены.")
         app.quit() # Закрыть окно утилиты после сообщения об успешном преобразовании
+    
     except ValueError:
         messagebox.showerror("Ошибка ввода", "Значение Csw должно быть рациональным положительным.")
 
@@ -124,7 +125,7 @@ current_directory = os.path.dirname(__file__)
 parent_directory = os.path.abspath(os.path.join(current_directory, os.pardir))
 icon_path = os.path.join(parent_directory, '.gitpics', 'Refiner-Coarsener.ico')
 
-app.title("FDS Mesh Refiner-Coarsener v0.1.1")
+app.title("FDS Mesh Refiner-Coarsener v0.1.2")
 app.iconbitmap(icon_path)
 app.wm_iconbitmap(icon_path)
 

@@ -12,8 +12,12 @@ def split_mesh(original_mesh, num_splits):
     x1, x2, y1, y2, z1, z2 = xb
 
     # Вычисляем количество разбиений по осям
-    num_splits_x = int(math.sqrt(num_splits))
+    num_splits_x = int(math.ceil(math.sqrt(num_splits)))
     num_splits_y = num_splits // num_splits_x
+    
+    # Отрегулируем num_splits_y если по оси Y остались дроби без целой части
+    if num_splits % num_splits_x != 0:
+        num_splits_y += 1
 
     dx = (x2 - x1) / num_splits_x
     dy = (y2 - y1) / num_splits_y
@@ -28,9 +32,16 @@ def split_mesh(original_mesh, num_splits):
     mesh_id = 1
     for ix in range(num_splits_x):
         for iy in range(num_splits_y):
-            xb_new = [x1 + ix * dx, x1 + (ix + 1) * dx,
-                      y1 + iy * dy, y1 + (iy + 1) * dy,
-                      z1, z2]
+            if mesh_id > num_splits:  # Проверяем, удалось ли достичь нужное число разбиений 
+                break
+
+            xb_new = [
+                x1 + ix * dx,
+                x1 + (ix + 1) * dx,
+                y1 + iy * dy,
+                y1 + (iy + 1) * dy,
+                z1, z2
+            ]
             ijk_new = [ni, nj, nk]
             mesh = {
                 'ID': f'Mesh{mesh_id:02d}',
@@ -39,6 +50,9 @@ def split_mesh(original_mesh, num_splits):
             }
             split_meshes.append(mesh)
             mesh_id += 1
+
+        if mesh_id > num_splits:
+            break
 
     return split_meshes
 
@@ -129,7 +143,7 @@ current_directory = os.path.dirname(__file__)
 parent_directory = os.path.abspath(os.path.join(current_directory, os.pardir))
 icon_path = os.path.join(parent_directory, '.gitpics', 'Partition.ico')
 
-root.title("FMT Mesh Partition Tool v0.1.1")
+root.title("FMT Mesh Partition Tool v0.1.2")
 root.iconbitmap(icon_path)
 root.wm_iconbitmap(icon_path)
 
