@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 import os
 import configparser
+import math
 
 def calculate_cs(xmin, xmax, imin):
     return (xmax - xmin) / imin
