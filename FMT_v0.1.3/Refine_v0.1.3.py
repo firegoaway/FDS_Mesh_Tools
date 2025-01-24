@@ -1,4 +1,5 @@
 import re
+import sys
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 import os
@@ -15,11 +16,17 @@ def read_ini_file(ini_file):
     return config['filePath']['filePath']
 
 def open_file():
+    if len(sys.argv) > 1:
+        ProcessID = int(sys.argv[1])
+        print(f"Process ID received from AHK: {ProcessID}")
+    else:
+        print("No Process ID received.")
+
     current_directory = os.path.dirname(__file__)
     parent_directory = os.path.abspath(os.path.join(current_directory, os.pardir))
     inis_path = os.path.join(parent_directory, 'inis')
         
-    ini_path = os.path.join(inis_path, 'filePath.ini')
+    ini_path = os.path.join(inis_path, f'filePath_{ProcessID}.ini')
     
     file_path = None
     
@@ -85,7 +92,7 @@ def refine_mesh():
         parent_directory = os.path.abspath(os.path.join(current_directory, os.pardir))
         inis_path = os.path.join(parent_directory, 'inis')
         
-        ini_path = os.path.join(inis_path, 'filePath.ini')
+        ini_path = os.path.join(inis_path, f'filePath_{ProcessID}.ini')
         
         file_path = read_ini_file(ini_path)
         if not file_path:
@@ -122,11 +129,17 @@ def unselect_all():
 
 app = tk.Tk()
 
+if len(sys.argv) > 1:
+    ProcessID = int(sys.argv[1])
+    print(f"Process ID received from AHK: {ProcessID}")
+else:
+    print("No Process ID received.")
+
 current_directory = os.path.dirname(__file__)
 parent_directory = os.path.abspath(os.path.join(current_directory, os.pardir))
 icon_path = os.path.join(parent_directory, '.gitpics', 'Refiner-Coarsener.ico')
 
-app.title("FDS Mesh Refiner-Coarsener v0.1.2")
+app.title(f"FDS Mesh Refiner-Coarsener v0.1.3 ID: {ProcessID}")
 app.iconbitmap(icon_path)
 app.wm_iconbitmap(icon_path)
 

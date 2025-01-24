@@ -5,6 +5,7 @@ import re
 import math
 import configparser
 import os
+import sys
 
 class Tooltip:
     """Создаёт всплывающие подсказки"""
@@ -231,7 +232,7 @@ def open_file():
     parent_directory = os.path.abspath(os.path.join(current_directory, os.pardir))
     inis_path = os.path.join(parent_directory, 'inis')
         
-    ini_path = os.path.join(inis_path, 'filePath.ini')
+    ini_path = os.path.join(inis_path, f'filePath_{ProcessID}.ini')
         
     file_path = read_ini_file(ini_path)
     
@@ -268,11 +269,17 @@ def on_partition_button():
 # Основное окно GUI
 root = tk.Tk()
 
+if len(sys.argv) > 1:
+    ProcessID = int(sys.argv[1])
+    print(f"Process ID received from AHK: {ProcessID}")
+else:
+    print("No Process ID received.")
+
 current_directory = os.path.dirname(__file__)
 parent_directory = os.path.abspath(os.path.join(current_directory, os.pardir))
 icon_path = os.path.join(parent_directory, '.gitpics', 'Partition.ico')
 
-root.title("FMT Mesh Partition Tool v0.1.2")
+root.title(f"FMT Mesh Partition Tool v0.1.3 ID:{ProcessID}")
 root.iconbitmap(icon_path)
 root.wm_iconbitmap(icon_path)
 
