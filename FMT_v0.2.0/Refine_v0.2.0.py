@@ -121,6 +121,78 @@ def refine_mesh():
     except ValueError:
         messagebox.showerror("Ошибка ввода", "Значение Csw должно быть рациональным положительным.")
 
+def merge_meshes():
+    try:
+        current_directory = os.path.dirname(__file__)
+        parent_directory = os.path.abspath(os.path.join(current_directory, os.pardir))
+        ini_path = os.path.join(parent_directory, 'inis', f'filePath_{ProcessID}.ini')
+        file_path = read_ini_file(ini_path)
+        
+        with open(file_path, 'r') as file:
+            lines = file.readlines()
+
+        meshes = []
+        for line in lines:
+            if line.strip().startswith('&MESH'):
+                xb_part = line.split('XB=')[-1].split('/')[0]
+                try:
+                    xb = [float(val.split('/')[0].strip()) for val in xb_part.split(',')]
+                    meshes.append(xb)
+                except ValueError:
+                    continue
+
+        if not meshes:
+            messagebox.showerror("Ошибка", "MESH записи не найдены!")
+            return
+
+        x_min = min(m[0] for m in meshes)
+        x_max = max(m[1] for m in meshes)
+        y_min = min(m[2] for m in meshes)
+        y_max = max(m[3] for m in meshes)
+        z_min = min(m[4] for m in meshes)
+        z_max = max(m[5] for m in meshes)
+
+        try:
+            csw = float(csw_entry.get())
+        except Exception:
+            min_cs = []
+            for line in lines:
+                match = re.search(r'&MESH\s.*?IJK=(\d+,\d+,\d+).*?XB=([-\d\.]+,[^,]+,[^,]+,[^,]+,[^,]+,[^,]+)', line)
+                if match:
+                    ijk = list(map(int, match.group(1).split(',')))
+                    xb_values = [float(val.split('/')[0].strip()) for val in match.group(2).split(',')]
+                    cs_x = (xb_values[1] - xb_values[0]) / ijk[0]
+                    cs_y = (xb_values[3] - xb_values[2]) / ijk[1]
+                    cs_z = (xb_values[5] - xb_values[4]) / ijk[2]
+                    min_cs.append(min(cs_x, cs_y, cs_z))
+            csw = min(min_cs) if min_cs else 0.1
+
+        i = int((x_max - x_min) / csw)
+        j = int((y_max - y_min) / csw)
+        k = int((z_max - z_min) / csw)
+
+        new_mesh = (
+            f"&MESH IJK={i},{j},{k}, XB={x_min:.6f},{x_max:.6f},"
+            f"{y_min:.6f},{y_max:.6f},{z_min:.6f},{z_max:.6f}/\n"
+        )
+
+        mesh_pattern = re.compile(r"&MESH")
+
+        new_lines = []
+        for line in lines:
+            if not mesh_pattern.search(line):
+                new_lines.append(line)
+        new_lines.insert(0, new_mesh)
+
+        with open(file_path, 'w') as file:
+            file.writelines(new_lines)
+        
+        messagebox.showinfo("Успех", "Все MESH объединены в один!")
+        app.quit()
+
+    except Exception as e:
+        messagebox.showerror("Ошибка", str(e))
+
 def select_all():
     lb.select_set(0, tk.END)
 
@@ -139,7 +211,7 @@ current_directory = os.path.dirname(__file__)
 parent_directory = os.path.abspath(os.path.join(current_directory, os.pardir))
 icon_path = os.path.join(parent_directory, '.gitpics', 'Refiner-Coarsener.ico')
 
-app.title(f"FDS Mesh Refiner-Coarsener v0.1.3 ID: {ProcessID}")
+app.title(f"FDS Mesh Refiner-Coarsener v0.2.0 ID: {ProcessID}")
 app.iconbitmap(icon_path)
 app.wm_iconbitmap(icon_path)
 
@@ -175,6 +247,9 @@ select_all_button.grid(row=1, column=0, padx=5, pady=5)
 
 unselect_all_button = ttk.Button(button_frame, text="Снять выбор", command=unselect_all)
 unselect_all_button.grid(row=1, column=1, padx=5, pady=5)
+
+merge_button = ttk.Button(frame, text="Объединить", command=merge_meshes)
+merge_button.grid(row=0, column=6, sticky=tk.W, padx=5)
 
 meshes = []
 

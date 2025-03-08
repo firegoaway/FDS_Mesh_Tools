@@ -279,7 +279,7 @@ current_directory = os.path.dirname(__file__)
 parent_directory = os.path.abspath(os.path.join(current_directory, os.pardir))
 icon_path = os.path.join(parent_directory, '.gitpics', 'Partition.ico')
 
-root.title(f"FMT Mesh Partition Tool v0.1.3 ID:{ProcessID}")
+root.title(f"FMT Mesh Partition Tool v0.2.0 ID:{ProcessID}")
 root.iconbitmap(icon_path)
 root.wm_iconbitmap(icon_path)
 
@@ -294,7 +294,7 @@ partition_entry.config(state=tk.DISABLED)  # Изначально отключе
 Tooltip(partition_entry, "Введите целое положительное ненулевое число.")
 
 # Создаём переменную для хранения состояния флажка
-homomorph_var = tk.IntVar(value=1)
+homomorph_var = tk.IntVar(value=0)
 homomorph_checkbox = tk.Checkbutton(root, text="Сохранять гомоморфизм разбиений", variable=homomorph_var)
 homomorph_checkbox.pack(pady=5)
 Tooltip(homomorph_checkbox, "Соблюсти пропорции размеров сетки.")
