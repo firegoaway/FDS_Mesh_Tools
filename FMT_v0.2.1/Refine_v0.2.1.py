@@ -115,6 +115,30 @@ def refine_mesh():
         with open(file_path, "w") as file:
             file.writelines(contents)
             
+        # Update IniDeltaZ.ini
+        try:
+            current_directory = os.path.dirname(__file__)
+            parent_directory = os.path.abspath(os.path.join(current_directory, os.pardir))
+            ini_delta_z_path = os.path.join(parent_directory, 'inis', 'IniDeltaZ.ini')
+            
+            config = configparser.ConfigParser()
+            # Read existing file if it exists, otherwise create structure
+            if os.path.exists(ini_delta_z_path):
+                config.read(ini_delta_z_path, encoding='utf-16')
+            
+            if not config.has_section('deltaZ'):
+                config.add_section('deltaZ')
+                
+            config.set('deltaZ', 'deltaZ', str(Csw))
+            
+            with open(ini_delta_z_path, 'w', encoding='utf-16') as configfile:
+                config.write(configfile)
+
+        except Exception as e:
+            messagebox.showerror("Ошибка записи IniDeltaZ.ini", f"Не удалось обновить IniDeltaZ.ini: {e}")
+            # Decide if you want to proceed without updating IniDeltaZ.ini or stop
+            # For now, we'll just show the error and continue to the success message for the .fds file
+
         messagebox.showinfo("Успех!", "Расчётные области преобразованы и сохранены.")
         app.quit() # Закрыть окно утилиты после сообщения об успешном преобразовании
     
