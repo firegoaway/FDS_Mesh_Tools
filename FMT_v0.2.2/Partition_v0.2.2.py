@@ -279,7 +279,7 @@ current_directory = os.path.dirname(__file__)
 parent_directory = os.path.abspath(os.path.join(current_directory, os.pardir))
 icon_path = os.path.join(parent_directory, '.gitpics', 'Partition.ico')
 
-root.title(f"FMT Mesh Partition Tool v0.2.1 ID:{ProcessID}")
+root.title(f"FMT Mesh Partition Tool v0.2.2 ID:{ProcessID}")
 root.iconbitmap(icon_path)
 root.wm_iconbitmap(icon_path)
 

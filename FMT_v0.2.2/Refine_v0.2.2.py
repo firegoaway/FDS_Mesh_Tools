@@ -52,8 +52,11 @@ def parse_file(file_path):
         lb.delete(0, tk.END)  # Очистить листбокс
 
     global meshes
+    global total_cells # Доступ к глобальной переменной
     meshes = []
     lb.delete(0, tk.END)  # Очистить листбокс
+    total_cells = 0 # Сбросить total cells
+    total_cells_label.config(text="Всего ячеек: 0") # Сбросить label text
 
     for line in contents:
         match = re.search(r'&MESH\s.*?\bIJK=(\d+,\d+,\d+)\b.*?\bXB=([-\d\.]+,[-\d\.]+,[-\d\.]+,[-\d\.]+,[-\d\.]+,[-\d\.]+)\b', line)
@@ -68,11 +71,13 @@ def parse_file(file_path):
             Cs = min(Cs_x, Cs_y, Cs_z)
             lb.insert(tk.END, f"{line.strip()}    Cs={Cs:.6f}")
             meshes.append((I, J, K, Xmin, Xmax, Ymin, Ymax, Zmin, Zmax, contents.index(line)))
+            total_cells += I * J * K # Добавить mesh cells к total
 
     cs_entry.config(state='normal')
     cs_entry.delete(0, tk.END)
     cs_entry.insert(0, f"{Cs:.6f}")
     cs_entry.config(state='disabled')
+    total_cells_label.config(text=f"Всего ячеек: {total_cells}") # Обновить label с окончательным количеством
 
 def refine_mesh():
     try:
@@ -287,6 +292,8 @@ def select_all():
 def unselect_all():
     lb.select_clear(0, tk.END)
 
+total_cells = 0  # Инициализировать глобальную переменную для общего количества ячеек
+
 app = tk.Tk()
 
 if len(sys.argv) > 1:
@@ -299,7 +306,7 @@ current_directory = os.path.dirname(__file__)
 parent_directory = os.path.abspath(os.path.join(current_directory, os.pardir))
 icon_path = os.path.join(parent_directory, '.gitpics', 'Refiner-Coarsener.ico')
 
-app.title(f"FDS Mesh Refiner-Coarsener v0.2.1 ID: {ProcessID}")
+app.title(f"FDS Mesh Refiner-Coarsener v0.2.2 ID: {ProcessID}")
 app.iconbitmap(icon_path)
 app.wm_iconbitmap(icon_path)
 
@@ -335,6 +342,9 @@ select_all_button.grid(row=1, column=0, padx=5, pady=5)
 
 unselect_all_button = ttk.Button(button_frame, text="Снять выбор", command=unselect_all)
 unselect_all_button.grid(row=1, column=1, padx=5, pady=5)
+
+total_cells_label = ttk.Label(frame, text="Всего ячеек: 0") # Добавить лейбл для общего количества ячеек
+total_cells_label.grid(row=1, column=2, padx=5, pady=5, sticky=tk.W)
 
 merge_button = ttk.Button(frame, text="Объединить", command=merge_meshes)
 merge_button.grid(row=0, column=6, sticky=tk.W, padx=5)
