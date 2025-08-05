@@ -306,7 +306,7 @@ current_directory = os.path.dirname(__file__)
 parent_directory = os.path.abspath(os.path.join(current_directory, os.pardir))
 icon_path = os.path.join(parent_directory, '.gitpics', 'Refiner-Coarsener.ico')
 
-app.title(f"FDS Mesh Refiner-Coarsener v0.2.2 ID: {ProcessID}")
+app.title(f"FDS Mesh Refiner-Coarsener v0.3.0 ID: {ProcessID}")
 app.iconbitmap(icon_path)
 app.wm_iconbitmap(icon_path)
 
