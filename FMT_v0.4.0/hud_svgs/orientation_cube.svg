@@ -1,0 +1,27 @@
+<svg width="60" height="60" viewBox="0 0 60" xmlns="http://www.w3.org/2000/svg">
+  <!-- Wireframe cube -->
+  <g stroke="#888" stroke-width="1" fill="none">
+    <!-- Back face -->
+    <polygon points="15,15 45,15 45,45 15,45" />
+    <!-- Front face -->
+    <polygon points="20,20 50,20 50,50 20,50" />
+    <!-- Connectors -->
+    <line x1="15" y1="15" x2="20" y2="20" />
+    <line x1="45" y1="15" x2="50" y2="20" />
+    <line x1="45" y1="45" x2="50" y2="50" />
+    <line x1="15" y1="45" x2="20" y2="50" />
+  </g>
+  
+  <!-- Directional indicators -->
+  <g fill="#444" font-family="Arial" font-size="8" text-anchor="middle">
+    <text x="35" y="12">F</text>
+    <text x="35" y="58">B</text>
+    <text x="8" y="32">L</text>
+    <text x="52" y="32">R</text>
+    <text x="25" y="25">T</text>
+    <text x="45" y="45">B</text>
+  </g>
+  
+  <!-- Highlight for current orientation (example for front view) -->
+  <polygon points="20,20 50,20 50,50 20,50" fill="#4A90E2" fill-opacity="0.3" stroke="#4A90E2" stroke-width="1" />
+</svg>

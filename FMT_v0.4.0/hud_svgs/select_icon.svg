@@ -1,0 +1,5 @@
+<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <!-- Cursor pointer -->
+  <path d="M5 3L12 12L9 15L15 21L18 18L12 12L21 5L5 3Z" fill="#4A90E2" stroke="#4A90E2" stroke-width="1"/>
+  <path d="M12 12L15 9" stroke="white" stroke-width="1"/>
+</svg>

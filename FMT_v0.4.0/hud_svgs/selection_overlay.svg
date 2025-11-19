@@ -1,0 +1,5 @@
+<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+  <!-- Semi-transparent selection rectangle -->
+  <rect x="0" y="0" width="100%" height="100%" fill="none" stroke="white" stroke-width="1" stroke-dasharray="5,5"/>
+  <rect x="0" y="0" width="100%" height="100%" fill="rgba(74, 14, 226, 0.2)"/>
+</svg>

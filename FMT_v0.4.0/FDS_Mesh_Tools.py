@@ -8,6 +8,9 @@ from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QLabel, QVBoxLa
 from PyQt6.QtGui import QPalette, QColor, QIcon, QIntValidator, QDoubleValidator, QFont
 from PyQt6.QtCore import Qt, QSize, pyqtSignal, QLocale
 
+# Import the 3D viewer component
+from FDS_Mesh_Viewer_3D import FDSMeshViewer3D
+
 # Глобальная переменная для ProcessID, используемая для путей к ini-файлам.
 # Инициализируется из аргументов командной строки при запуске.
 ProcessID = None
@@ -621,6 +624,7 @@ class FDSMeshToolsApp(QMainWindow):
         self.csw_entry = None
         self.refine_list_widget = None
         self.total_cells_label = None
+        self.viewer_3d = None  # 3D viewer instance
 
         # Определяем путь к иконке относительно текущего скрипта
         current_directory = os.path.dirname(__file__)
@@ -730,6 +734,9 @@ class FDSMeshToolsApp(QMainWindow):
         
         # Add Refine Tab
         self._setup_refine_tab()
+        
+        # Add 3D Tab
+        self._setup_3d_tab()
 
     
     def _get_group_box_style(self):
@@ -924,6 +931,129 @@ class FDSMeshToolsApp(QMainWindow):
  
         self.tab_widget.addTab(partition_tab, QIcon(os.path.join(self.parent_directory, '.gitpics', 'Partition.ico')), "Partition")
 
+    def _convert_mesh_data_for_3d_viewer(self, meshes_data):
+        """
+        Convert mesh data from the application format to the 3D viewer format.
+        
+        :param meshes_data: List of mesh data tuples in the format:
+                           (I, J, K, Xmin, Xmax, Ymin, Ymax, Zmin, Zmax, line_index)
+        :return: List of mesh dictionaries in the format expected by FDSMeshViewer3D:
+                 {'id', 'i', 'j', 'k', 'xmin', 'xmax', 'ymin', 'ymax', 'zmin', 'zmax'}
+        """
+        converted_meshes = []
+        for i, (I, J, K, Xmin, Xmax, Ymin, Ymax, Zmin, Zmax, line_index) in enumerate(meshes_data):
+            # Try to extract mesh ID from the original line
+            if self.fds_lines and line_index < len(self.fds_lines):
+                line = self.fds_lines[line_index].strip()
+                id_match = re.search(r"ID='([^']+)'", line)
+                if id_match:
+                    mesh_id = id_match.group(1)
+                else:
+                    # Generate an ID if not found
+                    mesh_id = f'Mesh_{i}'
+            else:
+                mesh_id = f'Mesh_{i}'
+            
+            converted_mesh = {
+                'id': mesh_id,
+                'i': I,
+                'j': J,
+                'k': K,
+                'xmin': Xmin,
+                'xmax': Xmax,
+                'ymin': Ymin,
+                'ymax': Ymax,
+                'zmin': Zmin,
+                'zmax': Zmax
+            }
+            converted_meshes.append(converted_mesh)
+        
+        return converted_meshes
+
+    def _setup_3d_tab(self):
+        """Sets up the UI for the 3D Viewer tab."""
+        # Create 3D viewer tab
+        viewer_3d_tab = QWidget()
+        viewer_3d_layout = QVBoxLayout(viewer_3d_tab)
+        viewer_3d_layout.setContentsMargins(15, 15, 15)
+        viewer_3d_layout.setSpacing(15)
+        
+        # Create instance of FDSMeshViewer3D
+        self.viewer_3d = FDSMeshViewer3D()
+        
+        # Connect signals
+        self.viewer_3d.mesh_selection_changed.connect(self._on_mesh_selection_changed)
+        self.viewer_3d.mesh_transformation_completed.connect(self._on_mesh_transformation_completed)
+        
+        viewer_3d_layout.addWidget(self.viewer_3d)
+        
+        # Add 3D tab to tab widget
+        self.tab_widget.addTab(viewer_3d_tab, QIcon(os.path.join(self.parent_directory, '.gitpics', 'FMT3.ico')), "3D Viewer")
+        
+    def _on_mesh_selection_changed(self, selected_meshes):
+        """
+        Handle mesh selection changes in the 3D viewer.
+        
+        :param selected_meshes: Set of selected mesh IDs
+        """
+        print(f"Selected meshes in 3D viewer: {selected_meshes}")
+        # In a full implementation, this could update other parts of the UI
+        # or synchronize with the FDS file data
+        
+    def _on_mesh_transformation_completed(self, transformed_data):
+        """
+        Handle mesh transformation completion in the 3D viewer.
+        
+        :param transformed_data: Dictionary with mesh ID as key and new data as value
+        """
+        print(f"Mesh transformation completed: {transformed_data}")
+        # Update FDS file data with transformed mesh data
+        self._update_fds_file_with_transformed_data(transformed_data)
+        
+    def _update_fds_file_with_transformed_data(self, transformed_data):
+        """
+        Update the FDS file with transformed mesh data.
+        
+        :param transformed_data: Dictionary with mesh ID as key and new data as value
+        """
+        if not self.fds_file_path or not self.fds_lines:
+            print("No FDS file loaded")
+            return
+            
+        # Create a copy of the FDS lines to modify
+        modified_lines = list(self.fds_lines)
+        
+        # Update mesh lines with transformed data
+        for i, line in enumerate(modified_lines):
+            if line.strip().startswith('&MESH'):
+                # Extract mesh ID from the line
+                id_match = re.search(r"ID='([^']+)'", line)
+                if id_match:
+                    mesh_id = id_match.group(1)
+                    if mesh_id in transformed_data:
+                        # Update the line with new coordinates
+                        mesh_data = transformed_data[mesh_id]
+                        new_line = re.sub(
+                            r'XB=[^/\n]*',
+                            f"XB={mesh_data['xmin']:.4f},{mesh_data['xmax']:.4f},"
+                            f"{mesh_data['ymin']:.4f},{mesh_data['ymax']:.4f},"
+                            f"{mesh_data['zmin']:.4f},{mesh_data['zmax']:.4f}",
+                            line
+                        )
+                        modified_lines[i] = new_line
+                        
+        # Update the FDS file
+        try:
+            write_fds_file(self.fds_file_path, modified_lines)
+            print(f"Updated FDS file with transformed mesh data")
+            
+            # Reload the file to update the UI
+            with open(self.fds_file_path, 'r', encoding='utf-8') as file:
+                new_lines = file.readlines()
+            self._handle_file_selected(self.fds_file_path, new_lines)
+        except Exception as e:
+            print(f"Error updating FDS file: {e}")
+
 
     def _handle_file_selected(self, file_path, fds_lines):
         """
@@ -939,6 +1069,7 @@ class FDSMeshToolsApp(QMainWindow):
                 self.partition_entry.setEnabled(True)
                 self.partition_button.setEnabled(True)
                 self.parse_file_refine(file_path, fds_lines) # Call to update Refine tab
+                self._update_3d_viewer()  # Update 3D viewer
             else:
                 QMessageBox.warning(self, "Ошибка", "Расчетная область (&MESH) не найдена в файле.")
                 self.partition_entry.setEnabled(False)
@@ -951,6 +1082,9 @@ class FDSMeshToolsApp(QMainWindow):
                 self.cs_entry.setText("")
                 self.total_cells_label.setText("Всего ячеек: 0")
                 self.refine_list_widget.clear()
+                # Clear 3D viewer
+                if self.viewer_3d:
+                    self.viewer_3d.clear_meshes()
         else:
             self.partition_entry.setEnabled(False)
             self.partition_button.setEnabled(False)
@@ -962,6 +1096,9 @@ class FDSMeshToolsApp(QMainWindow):
             self.cs_entry.setText("")
             self.total_cells_label.setText("Всего ячеек: 0")
             self.refine_list_widget.clear()
+            # Clear 3D viewer
+            if self.viewer_3d:
+                self.viewer_3d.clear_meshes()
 
     def parse_file_refine(self, file_path, contents):
         """
@@ -1007,6 +1144,22 @@ class FDSMeshToolsApp(QMainWindow):
             self.select_all_button.setEnabled(False)
             self.unselect_all_button.setEnabled(False)
 
+    def _update_3d_viewer(self):
+        """
+        Update the 3D viewer with the current mesh data.
+        """
+        if not self.viewer_3d:
+            return
+            
+        try:
+            # Convert mesh data to 3D viewer format
+            converted_meshes = self._convert_mesh_data_for_3d_viewer(self.meshes)
+            
+            # Update the 3D viewer
+            self.viewer_3d.load_mesh_data(converted_meshes)
+        except Exception as e:
+            print(f"Error updating 3D viewer: {e}")
+
     def on_partition_button(self):
         """
         Handles the partition button click event.
@@ -1037,6 +1190,7 @@ class FDSMeshToolsApp(QMainWindow):
                 write_fds_file(self.fds_file_path, modified_lines)
                 QMessageBox.information(self, "Успех!", f"Расчетная область поделена на {partition_value} частей.")
                 self.parse_file_refine(self.fds_file_path, modified_lines)
+                self._update_3d_viewer()  # Update 3D viewer
         except ValueError as ve:
             QMessageBox.warning(self, "Ошибка ввода", str(ve))
         except Exception as e:
@@ -1109,6 +1263,7 @@ class FDSMeshToolsApp(QMainWindow):
                 QMessageBox.information(self, "Успех!", "Расчётные области преобразованы и сохранены.")
                 # Перезагрузить файл, передавая текущие lines
                 self.parse_file_refine(self.fds_file_path, modified_contents)
+                self._update_3d_viewer()  # Update 3D viewer
         except ValueError:
             QMessageBox.warning(self, "Ошибка ввода", "Значение Csw должно быть рациональным положительным.")
         except Exception as e:
@@ -1137,6 +1292,7 @@ class FDSMeshToolsApp(QMainWindow):
                 QMessageBox.information(self, "Успех!", "MESH и VENT объединены!")
                 # Перезагрузить файл, передавая текущие lines
                 self.parse_file_refine(self.fds_file_path, modified_contents)
+                self._update_3d_viewer()  # Update 3D viewer
         except Exception as e:
             QMessageBox.critical(self, "Критическая ошибка", f"Произошла непредвиденная ошибка: {e}")
 
@@ -1151,6 +1307,20 @@ class FDSMeshToolsApp(QMainWindow):
         Снимает выбор со всех элементов в списке.
         """
         self.refine_list_widget.clearSelection()
+
+    def closeEvent(self, event):
+        """
+        Handle cleanup when the application closes.
+        """
+        # Clean up 3D viewer resources if it exists
+        if self.viewer_3d:
+            try:
+                self.viewer_3d.close()
+            except Exception as e:
+                print(f"Error closing 3D viewer: {e}")
+        
+        # Call parent implementation
+        super().closeEvent(event)
 
 def write_fds_file(file_path: str, contents: list):
     """
